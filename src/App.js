@@ -72,9 +72,9 @@ export default function App() {
 
     try {
       const response = await axios.post("https://cs698-a3-3.onrender.com/predict", payload);
-      setPrediction(response.data);
+      setPrediction(response.data[0]);
       console.log('====================================');
-      console.log(response.data);
+      console.log(response.data[0]);
       console.log('====================================');
     } catch (error) {
       console.error("Error calling prediction API:", error);
@@ -146,12 +146,12 @@ export default function App() {
           {prediction && (
             <div className="card result-card">
               <h2>Prediction Result</h2>
-              <div className={`outcome-header ${prediction.prediction.toLowerCase()}`}>
+              <div className={`outcome-header ${prediction.prediction_label.toLowerCase()}`}>
                 <span className="outcome-icon">
-                  {prediction.prediction === "Graduate" ? "✅" : "❌"}
+                  {prediction.prediction_label === "Graduate" ? "✅" : "❌"}
                 </span>
                 <p className="outcome-text">
-                  This student is likely to <strong>{prediction.prediction}</strong>
+                  This student is likely to <strong>{prediction.prediction_label}</strong>
                 </p>
               </div>
               <div className="confidence-section">
@@ -166,6 +166,11 @@ export default function App() {
               </div>
             </div>
           )}
+
+          <div className="card info-card">
+            <h2>ℹ️ About This Model</h2>
+            <p>{modelInfo}</p>
+          </div>
 
           {fairness && (
   <div className="card fairness-card">
@@ -200,10 +205,7 @@ export default function App() {
 )}
 
 
-          <div className="card info-card">
-            <h2>ℹ️ About This Model</h2>
-            <p>{modelInfo}</p>
-          </div>
+          
         </div>
       </main>
     </div>
