@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import "./App.css";
 
@@ -100,6 +100,11 @@ export default function App() {
     cu1Grade: "Average grade for 1st semester units.",
     cu2Grade: "Average grade for 2nd semester units.",
     cu2Approved: "Number of 2nd semester units approved.",
+  };
+   const explanationRef = useRef(null);
+
+  const handleScrollToExplanation = () => {
+    explanationRef.current.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
@@ -203,11 +208,109 @@ export default function App() {
     </div>
   </div>
 )}
+    
+   <button onClick={handleScrollToExplanation} className="explanation-btn">
+        See explanation
+      </button>
 
+      {/* Some spacing or main content here */}
+      <div style={{ height: "50px" }}></div>
+
+      {/* The explanation section */}
+      
 
           
         </div>
       </main>
+      <div ref={explanationRef} className="explanation-section">
+  <h1>🎓 Student Dropout Prediction — Model Transparency & Explainability</h1>
+
+  <p>
+    This project uses <em>XGBoost (Extreme Gradient Boosting)</em> to predict the likelihood
+    of a student <em>graduating or dropping out</em> based on selected academic and socio-economic features.
+  </p>
+  <p>
+    It focuses on <strong>transparency, fairness, and explainability</strong> — helping educators understand why each prediction is made.
+  </p>
+  <hr />
+
+  <h2>🧠 Overview: What XGBoost Does</h2>
+  <p>
+    XGBoost is a machine-learning algorithm that builds an <em>ensemble of small decision trees</em>,
+    where each new tree learns to <em>correct the errors</em> made by the previous ones.
+  </p>
+  <p>Each tree looks for simple patterns like:</p>
+  <blockquote>
+    “If admission grade is high and most courses are approved → higher chance of graduation.”
+  </blockquote>
+  <p>All trees then combine their “votes” to produce the final probability that a student will graduate.</p>
+  <hr />
+
+  <h2>🌳 How the Model Learns (Step by Step)</h2>
+
+  <h3>1️⃣ Building Trees</h3>
+  <p>
+    XGBoost builds <em>T</em> trees <em>f₁, f₂, ..., f_T</em>, each contributing a small adjustment to the prediction:
+  </p>
+  <pre>{`ŷ_i = Σ_{t=1}^{T} f_t(x_i)`}</pre>
+  <p>Each f_t is a decision tree, trained to reduce the model’s overall prediction error.</p>
+  <hr />
+
+  <h3>2️⃣ Objective Function</h3>
+  <p>
+    XGBoost minimizes an objective function that balances accuracy and simplicity:
+  </p>
+  <pre>{`Obj = Σ_{i=1}^{n} l(y_i, ŷ_i) + Σ_{t=1}^{T} Ω(f_t)`}</pre>
+  <p>Where:</p>
+  <ul>
+    <li>l(y_i, ŷ_i) → how wrong the prediction is (loss)</li>
+    <li>Ω(f_t) → penalty for overly complex trees (regularization)</li>
+  </ul>
+
+  <hr />
+
+  <h3>3️⃣ Using Gradients and Hessians</h3>
+  <p>
+    To grow each tree efficiently, XGBoost uses a second-order Taylor expansion of the loss function:
+  </p>
+  <pre>{`Obj^(t) ≈ Σ_i [ l(y_i, ŷ_i^(t-1)) + g_i f_t(x_i) + 0.5 h_i f_t^2(x_i) ] + Ω(f_t)`}</pre>
+  <p>Where g_i = ∂l/∂ŷ_i (gradient), h_i = ∂²l/∂ŷ_i² (hessian)</p>
+
+  <hr />
+
+  <h3>4️⃣ Leaf Weights and Tree Splits</h3>
+  <pre>{`w_j* = - Σ_{i∈j} g_i / (Σ_{i∈j} h_i + λ)`}</pre>
+  <p>Choose splits that give the highest gain in reducing error:</p>
+  <pre>{`Gain = 0.5 [ (Σ_{i∈L} g_i)^2/(Σ_{i∈L} h_i + λ) + (Σ_{i∈R} g_i)^2/(Σ_{i∈R} h_i + λ) - (Σ_{i∈L∪R} g_i)^2/(Σ_{i∈L∪R} h_i + λ) ] - γ`}</pre>
+
+  <hr />
+
+  <h3>5️⃣ Updating the Model</h3>
+  <pre>{`ŷ_i^(t) = ŷ_i^(t-1) + η f_t(x_i)`}</pre>
+  <p>η (learning rate) controls how much each new tree influences the final outcome.</p>
+
+  <hr />
+
+  <h2>📊 Making a Prediction</h2>
+  <ol>
+    <li>Student data x is passed through all trees.</li>
+    <li>Each tree outputs a small “vote” or weight.</li>
+    <li>All votes are added: <pre>{`ŷ_raw = Σ_{t=1}^{T} f_t(x)`}</pre></li>
+    <li>Converted into probability using sigmoid: <pre>{`p = 1 / (1 + e^{-ŷ_raw})`}</pre></li>
+    <li>If p > 0.5 → Graduate, else → Dropout</li>
+  </ol>
+
+  <hr />
+
+  <h2>💬 In Human Terms</h2>
+  <ul>
+    <li>Each tree is like a teacher giving advice based on certain rules.</li>
+    <li>The model combines all advice into one balanced decision.</li>
+    <li>It optimizes for accuracy while keeping itself simple and fair.</li>
+    <li>The final number is a probability — a measure of confidence, not certainty.</li>
+  </ul>
+</div>
+
     </div>
   );
 }
